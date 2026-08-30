@@ -1,52 +1,60 @@
 import os
 import tensorflow as tf
 
-def load_data(train_dir=None, val_dir=None, test_dir=None, img_height=224, img_width=224, batch_size=32, seed=42):
-    # Default paths from the notebook
-    if train_dir is None:
-        train_dir = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Train"
-    if val_dir is None:
-        val_dir = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Val"
-    if test_dir is None:
-        test_dir = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Test"
+def load_dataset_and_preprocess():
+    TRAIN_DIR = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Train"
+    VAL_DIR = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Val"
+    TEST_DIR = "/kaggle/input/datasets/edoardovantaggiato/covid19-xray-two-proposed-databases/Datasets/3-classes/Test"
 
-    print("Checking dataset...")
-    print("Train path exists:", os.path.exists(train_dir))
-    print("Validation path exists:", os.path.exists(val_dir))
-    print("Test path exists:", os.path.exists(test_dir))
+    IMG_HEIGHT = 224
+    IMG_WIDTH = 224
+    IMAGE_SIZE = (IMG_HEIGHT, IMG_WIDTH)
+    BATCH_SIZE = 32
+    SEED = 42
 
-    image_size = (img_height, img_width)
-
-
-    print("Loading train dataset...")
     train_dataset = tf.keras.utils.image_dataset_from_directory(
-        train_dir,
+        TRAIN_DIR,
         labels="inferred",
         label_mode="int",
-        image_size=image_size,
-        batch_size=batch_size,
+        image_size=IMAGE_SIZE,
+        batch_size=BATCH_SIZE,
         shuffle=True,
-        seed=seed
+        seed=SEED
     )
 
-    print("Loading validation dataset...")
     val_dataset = tf.keras.utils.image_dataset_from_directory(
-        val_dir,
+        VAL_DIR,
         labels="inferred",
         label_mode="int",
-        image_size=image_size,
-        batch_size=batch_size,
+        image_size=IMAGE_SIZE,
+        batch_size=BATCH_SIZE,
         shuffle=False
     )
 
-    print("Loading test dataset...")
     test_dataset = tf.keras.utils.image_dataset_from_directory(
-        test_dir,
+        TEST_DIR,
         labels="inferred",
         label_mode="int",
-        image_size=image_size,
-        batch_size=batch_size,
+        image_size=IMAGE_SIZE,
+        batch_size=BATCH_SIZE,
         shuffle=False
     )
 
-    return train_dataset, val_dataset, test_dataset
+    class_names = train_dataset.class_names
+    NUM_CLASSES = len(class_names)
+
+    AUTOTUNE = tf.data.AUTOTUNE
+
+    train_dataset = train_dataset.prefetch(
+        buffer_size=AUTOTUNE
+    )
+
+    val_dataset = val_dataset.prefetch(
+        buffer_size=AUTOTUNE
+    )
+
+    test_dataset = test_dataset.prefetch(
+        buffer_size=AUTOTUNE
+    )
+
+    return train_dataset, val_dataset, test_dataset, IMG_HEIGHT, IMG_WIDTH, NUM_CLASSES
