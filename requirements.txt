@@ -1,0 +1,11 @@
+torch
+torchvision
+scikit-learn
+pandas
+matplotlib
+seaborn
+huggingface-hub
+datasets
+pillow
+opencv-python
+ipykernel
